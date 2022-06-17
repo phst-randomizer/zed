@@ -98,10 +98,12 @@ def disassembleInstructionType3(inst, bmg, allBmgs):
         unk01, unk04, f'goto={gotoName}')
 
 
-def disassembleInstruction(inst, bmg, allBmgs):
+def disassembleInstruction(inst: bytes, bmg, allBmgs):
     """
     Disassemble a single instruction.
     """
+
+    inst: int = int.from_bytes(inst, 'little')
 
     instID = inst & 0xFF
 
@@ -140,7 +142,7 @@ def analyze(filename, rawData, bmg, allBmgs):
     FLW1Offset = rawData.index(b'FLW1')
 
     # Print the scripts
-    idx2ScriptId = {b: a for (a, b) in bmg.scripts.items()}
+    idx2ScriptId = {b: a for (a, b) in bmg.scripts}
     lines = []
 
     # for scriptID, instIdx in bmg.scripts.items():
@@ -149,10 +151,10 @@ def analyze(filename, rawData, bmg, allBmgs):
     # lines.append('')
 
     zeldaScripts.disassembleInstructions(bmg.instructions)
-    return
+    # return
 
     for i, inst in enumerate(bmg.instructions):
-        for scriptID, instIdx in bmg.scripts.items():
+        for scriptID, instIdx in bmg.scripts:
             if i != instIdx: continue
             lines.append(f'S{scriptID >> 16}_{scriptID & 0xFFFF}:')
 
@@ -170,7 +172,7 @@ def analyze(filename, rawData, bmg, allBmgs):
         lines.append(line)
 
     if lines:
-        with open('/home/user/zed/Testing/stExportedScripts/' + filename + '.txt', 'w', encoding='utf-8') as f:
+        with open(f'output/{filename}.txt', 'w', encoding='utf-8') as f:
             f.write('\n'.join(lines))
 
     # Print the messages
@@ -180,13 +182,12 @@ def analyze(filename, rawData, bmg, allBmgs):
         lines.append(str(msg))
         lines.append('--------' * 4)
     del lines[-1]
-    with open('/home/user/zed/Testing/stExportedMessages/' + filename + '.txt', 'w', encoding='utf-8') as f:
+    with open(f'output/{filename}.txt', 'w', encoding='utf-8') as f:
             f.write('\n'.join(lines))
 
 
 def main():
-    dir = '/home/user/zed/Testing/st/root/English/Message/'
-    dir2 = '/home/user/zed/Testing/stResavedBMGs/'
+    dir = 'data/English/Message'
 
     BMGs = {}
 

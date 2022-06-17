@@ -45,8 +45,7 @@ class SayInstruction(Instruction):
     typeID = 1
 
     @classmethod
-    def disassemble(cls, value):
-
+    def disassemble(cls, value: int):
         assert value & 0xFF == 1
 
         bmgID = (value >> 8) & 0xFF
@@ -73,8 +72,7 @@ class SwitchInstruction(Instruction):
     typeID = 2
 
     @classmethod
-    def disassemble(cls, value):
-
+    def disassemble(cls, value: int):
         assert value & 0xFF == 2
 
         numLabels = (value >> 8) & 0xFF
@@ -229,7 +227,7 @@ class DoInstruction(Instruction):
     typeID = 3
 
     @classmethod
-    def disassemble(cls, value):
+    def disassemble(cls, value: int):
         assert value & 0xFF == 3
 
         action = (value >> 8) & 0xFF
@@ -360,10 +358,12 @@ class DoLaunchScriptInstruction(DoInstruction):
         self.scriptID = ((value & 0xFFFF) << 16) | (value >> 16)
 
 
-def disassembleInstruction(instruction):
+def disassembleInstruction(instruction: bytes):
     """
     Disassemble a single instruction value into an Instruction.
     """
+    instruction: int = int.from_bytes(instruction, 'little')
+
     instID = instruction & 0xFF
 
     if instID not in (1, 2, 3):
