@@ -2,7 +2,7 @@
 import struct
 
 
-import common
+from . import common
 
 
 class LDLB:

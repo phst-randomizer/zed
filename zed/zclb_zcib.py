@@ -2,7 +2,7 @@
 import enum
 import struct
 
-import common
+from . import common
 
 
 class TopScreenMode(enum.IntEnum):

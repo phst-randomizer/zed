@@ -15,8 +15,8 @@ import ndspy.lz10
 import ndspy.narc
 import ndspy.rom
 
-import common
-import zmb
+from . import common
+from . import zmb
 
 
 PH_ROM_IN = '../Testing/Zelda - Phantom Hourglass.nds'

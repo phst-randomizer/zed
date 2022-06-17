@@ -12,12 +12,12 @@ import ndspy.lz10
 import ndspy.narc
 import ndspy.rom
 
-import common
-import zab
-import zcb
-import zclb_zcib
-import zmb
-import zob
+from . import common
+from . import zab
+from . import zcb
+from . import zclb_zcib
+from . import zmb
+from . import zob
 
 
 PH_ROM_IN = '../Testing/Zelda - Phantom Hourglass.nds'

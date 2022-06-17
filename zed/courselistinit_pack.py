@@ -14,8 +14,8 @@ import ndspy.lz10
 import ndspy.narc
 import ndspy.rom
 
-import common
-import zclb_zcib
+from . import common
+from . import zclb_zcib
 
 
 ST_ROM_IN = '../Testing/Zelda - Spirit Tracks.nds'
