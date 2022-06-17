@@ -159,19 +159,25 @@ class Entrance:
             self.unk11 = 0
             self.useZPosition = False
 
-        else:
+        elif game == common.Game.SpiritTracks:
             (self.x, self.z, self.y, self.rotation, self.id,
                 self.unk0F, self.isZelda, self.unk11, self.useZPosition) = \
                 struct.unpack_from('<IIIhbb?b?x', data)
+
+        else:
+            (self.x, self.z, self.y, self.rotation, self.id, self.unk0F) = struct.unpack_from('<IIIhbb', data)
 
 
     def save(self, game):
         """
         Save the exit back to a bytes object.
         """
-        return struct.pack('<IIIhbb?b?x',
-            self.x, self.z, self.y, self.rotation, self.id,
-            self.unk0F, self.isZelda, self.unk11, self.useZPosition)
+        if game == common.Game.SpiritTracks:
+            return struct.pack('<IIIhbb?b?x',
+                self.x, self.z, self.y, self.rotation, self.id,
+                self.unk0F, self.isZelda, self.unk11, self.useZPosition)
+        else:
+            return struct.pack('<IIIhbb', self.x, self.z, self.y, self.rotation, self.id, self.unk0F)
 
 
 class MapObject:
