@@ -254,15 +254,16 @@ class Actor:
             self.x = self.y = self.z = 0
             self.rotation = 0
             self.unk0C = 0
+            self.unk0E = 0
             self.unk10 = 0
             self.unk14 = 0
             self.scriptID = 0
             self.unk1C = 0
 
         else:
-            (type, self.x, self.y, self.z, self.rotation, self.unk0C,
+            (type, self.x, self.y, self.z, self.rotation, self.unk0C, self.unk0E,
                     self.unk10, self.unk14, self.scriptID, self.unk1C) = \
-                struct.unpack_from('<4s4h5I', data)
+                struct.unpack_from('<4s4h2H4I', data)
             self.type = type[::-1].decode('ascii')
 
 
@@ -270,9 +271,9 @@ class Actor:
         """
         Save the actor back to a bytes object.
         """
-        return struct.pack('<4s4h5I',
+        return struct.pack('<4s4h2H4I',
             self.type.encode('ascii')[::-1],
-            self.x, self.y, self.z, self.rotation, self.unk0C, self.unk10,
+            self.x, self.y, self.z, self.rotation, self.unk0C, self.unk0E, self.unk10,
             self.unk14, self.scriptID, self.unk1C)
 
 
