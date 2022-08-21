@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 import struct
 
@@ -479,7 +480,7 @@ class ZMB:
         assert mpobUnk0A == -1
         assert mpobLen == 12 + 0x1C * mpobCount
 
-        self.mapObjects = []
+        self.mapObjects: list[MapObject] = []
         for i in range(mpobCount):
             baseOff = mpobOffset + 12 + 0x1C * i
             self.mapObjects.append(MapObject(game, data[baseOff : baseOff + 0x1C]))
@@ -492,7 +493,7 @@ class ZMB:
         assert npcaUnk0A == -1
         assert npcaLen == 12 + 0x20 * npcaCount
 
-        self.actors = []
+        self.actors: list[Actor] = []
         for i in range(npcaCount):
             baseOff = npcaOffset + 12 + 0x20 * i
             self.actors.append(Actor(game, data[baseOff : baseOff + 0x20]))
