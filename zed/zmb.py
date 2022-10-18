@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+import pathlib
+
 import struct
 
 
@@ -619,7 +622,20 @@ class ZMB:
         
         image = PIL.Image.new('RGBA', (IMGW, IMGH), (0, 0, 0, 0))
         draw = PIL.ImageDraw.Draw(image)
-        font = PIL.ImageFont.truetype('/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf', 10)
+
+        # Try a couple different fonts, if they all fail, just load the default.
+        for directory in (
+            'C:\\Windows\\Fonts',
+            f'C:\\Users\\{os.getlogin()}\\AppData\\Local\\Microsoft\\Windows\\Fonts',
+            '/usr/share/fonts/truetype/noto',
+        ):
+            try:
+                font = PIL.ImageFont.truetype(str(pathlib.Path(directory) / 'NotoMono-Regular.ttf'), size=10)
+                break
+            except OSError:
+                font = None
+        if font is None:
+            raise Exception('Please install the NotoMono-Regular font.')
 
         stuff = []
         lines = []
@@ -666,7 +682,7 @@ class ZMB:
             canvasY = minY
             canvasW = canvasH = max(maxX - canvasX, maxY - canvasY)
 
-            def canvasPos(x, y):
+            def canvasPos(x, y) -> tuple[float, float]:
                 return (1024 * (x - canvasX) / canvasW,
                         1024 * (y - canvasY) / canvasH)
 
