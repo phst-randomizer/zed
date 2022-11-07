@@ -5,15 +5,20 @@ on:
       - master
   pull_request:
 jobs:
-  test-build:
-    name: Test package install
+  test-local-build:
+    name: Test package install [local]
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10']
-    runs-on: ubuntu-latest
+        os: [ubuntu, macos, windows]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+    runs-on: ${{ matrix.os }}-latest
+    defaults:
+      run:
+        shell: bash
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -23,3 +28,24 @@ jobs:
 
       - name: Install `zed` package
         run: pip install .
+
+  test-remote-build:
+    name: Test package install [remote]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macos, windows]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+    runs-on: ${{ matrix.os }}-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          check-latest: true
+
+      - name: Install `zed` package [remote install]
+        run: pip install "zed @ git+https://github.com/phst-randomizer/zed.git@${{ github.sha }}"
