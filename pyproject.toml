@@ -1,7 +1,7 @@
 [project]
 name = "zed"
 version = "0.0.0"
-dependencies = ["ndspy==4.0.0"]
+dependencies = ["ndspy==4.1.0"]
 requires-python = ">=3.8"
 
 [build-system]
