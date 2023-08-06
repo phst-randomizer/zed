@@ -623,12 +623,13 @@ class ZMB:
         image = PIL.Image.new('RGBA', (IMGW, IMGH), (0, 0, 0, 0))
         draw = PIL.ImageDraw.Draw(image)
 
+        if os.name == 'nt':
+            font_directories = ('C:\\Windows\\Fonts', f'C:\\Users\\{os.getlogin()}\\AppData\\Local\\Microsoft\\Windows\\Fonts',)
+        else:
+            font_directories = ('/usr/share/fonts/truetype/noto',)
+
         # Try a couple different fonts, if they all fail, just load the default.
-        for directory in (
-            'C:\\Windows\\Fonts',
-            f'C:\\Users\\{os.getlogin()}\\AppData\\Local\\Microsoft\\Windows\\Fonts',
-            '/usr/share/fonts/truetype/noto',
-        ):
+        for directory in font_directories:
             try:
                 font = PIL.ImageFont.truetype(str(pathlib.Path(directory) / 'NotoMono-Regular.ttf'), size=10)
                 break
