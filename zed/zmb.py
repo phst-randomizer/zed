@@ -659,7 +659,7 @@ class ZMB:
                     lines.append(((255,0,255,255), lastXY, (x, y)))
                 lastXY = x, y
         for act in self.actors:
-            stuff.append(((0,0,0,255), act.type, act.x, act.y))
+            stuff.append(((255,255,0,255), act.type, act.x, act.y))
         for ent in self.entrances:
             stuff.append(((0,0,255,255), "Ent.", ent.x >> 12, ent.y >> 12))
         for loc in self.locations:
