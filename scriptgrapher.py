@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os, os.path
 import textwrap
 
@@ -7,7 +9,7 @@ import pygraphviz
 import zeldaScripts
 
 
-def nextInstructions(inst, bmg):
+def nextInstructions(inst: zeldaScripts.Instruction, bmg: ndspy.bmg.BMG):
     """
     Return a list of (name, Label)s that the given instruction is able
     to branch to.
@@ -25,7 +27,7 @@ def nextInstructions(inst, bmg):
         return [(None, zeldaScripts.Label(*bmg.labels[inst.labelNumber]))]
 
 
-def nextInstructions_filterBmg(inst, bmg):
+def nextInstructions_filterBmg(inst: zeldaScripts.Instruction, bmg: ndspy.bmg.BMG):
     """
     Runs nextInstructions, but only returns results with the given BMG.
     And returns raw indices instead of Label instances.
@@ -37,7 +39,11 @@ def nextInstructions_filterBmg(inst, bmg):
     return indices
 
 
-def findRuns(bmg, insts, labels):
+def findRuns(
+    bmg: ndspy.bmg.BMG,
+    insts: list[zeldaScripts.Instruction],
+    labels: list[zeldaScripts.Label],
+) -> list[list[int]]:
     """
     Find run indices in this BMG.
     """
@@ -87,7 +93,12 @@ def findRuns(bmg, insts, labels):
     return runs
 
 
-def analyze(filename, rawData, bmg, allBmgs):
+def analyze(
+    filename: str,
+    rawData: bytes,
+    bmg: ndspy.bmg.BMG,
+    allBmgs: dict[int, tuple[str, ndspy.bmg.BMG]],
+) -> None:
     if b'FLW1' not in rawData:
         print(f'{filename} does not have scripts.')
         return
@@ -190,7 +201,7 @@ def main():
     dir = '/home/user/zed/Testing/st/root/English/Message/'
     dir2 = '/home/user/zed/Testing/stResavedBMGs/'
 
-    BMGs = {}
+    BMGs: dict[int, tuple[str, ndspy.bmg.BMG]] = {}
 
     for fn in os.listdir(dir):
         fullfn = os.path.join(dir, fn)
@@ -201,7 +212,7 @@ def main():
         BMGs[bmg.id] = (fn, bmg)
 
 
-    allScripts = {}
+    allScripts: dict[int, set[int]] = {}
     for id, (fn, bmg) in BMGs.items():
         for id in bmg.scripts:
             a, b = id >> 16, id & 0xFFFF
