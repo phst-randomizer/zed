@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import os, os.path
 import textwrap
 
@@ -198,8 +199,11 @@ def analyze(
 
 
 def main():
-    dir = '/home/user/zed/Testing/st/root/English/Message/'
-    dir2 = '/home/user/zed/Testing/stResavedBMGs/'
+    parser = argparse.ArgumentParser(prog="scriptgrapher")
+    parser.add_argument('bmg_dir')
+    args = parser.parse_args()
+
+    dir: str = args.bmg_dir
 
     BMGs: dict[int, tuple[str, ndspy.bmg.BMG]] = {}
 
@@ -225,8 +229,9 @@ def main():
             print(f'    {b}:')
     return
 
-
     for id, (fn, bmg) in BMGs.items():
         analyze(fn, d, bmg, BMGs)
 
-main()
+
+if __name__ == '__main__':
+    main()
