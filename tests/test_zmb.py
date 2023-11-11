@@ -6,7 +6,7 @@ from ndspy import fnt, lz10, narc, rom
 
 from zed import common, zmb
 
-PH_ROM_PATH = os.environ["PH_ROM_PATH"]
+PH_ROM_PATH = os.environ.get("PH_ROM_PATH")
 
 
 def _get_zmb_files() -> Iterator[tuple[str, bytes]]:
@@ -22,10 +22,11 @@ def _get_zmb_files() -> Iterator[tuple[str, bytes]]:
             yield f"{narc_filepath}/{zmb_path}", narc_file.getFileByName(zmb_path)
 
 
+@pytest.mark.skipif(PH_ROM_PATH is None, reason='No rom path provided')
 @pytest.mark.parametrize(
     argnames="zmb_data",
-    argvalues=[z[1] for z in _get_zmb_files()],
-    ids=[z[0] for z in _get_zmb_files()],
+    argvalues=[z[1] for z in _get_zmb_files()] if PH_ROM_PATH else [],
+    ids=[z[0] for z in _get_zmb_files()] if PH_ROM_PATH else [],
 )
 def test_zmb(zmb_data):
     """Test ZMB module by loading a zmb file from binary data, saving it, and comparing the result to the original."""
