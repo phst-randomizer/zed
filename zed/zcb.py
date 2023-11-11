@@ -5,7 +5,7 @@ class ZCB:
 
     def _initFromData(self, game, data):
         self.data = data
-        #print(data[:10])
+        # print(data[:10])
 
     def save(self, game):
         return self.data

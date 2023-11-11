@@ -2,12 +2,15 @@
 
 import struct
 
+
 class Label:
     """
     Convenience class to represent a label.
     """
+
     bmg = 0
     index = 0
+
     def __init__(self, bmg, index):
         self.bmg, self.index = bmg, index
 
@@ -19,6 +22,7 @@ class Instruction:
     """
     Abstract base class for Zelda PH/ST script instructions.
     """
+
     type = None
     typeID = 0
 
@@ -35,6 +39,7 @@ class SayInstruction(Instruction):
     """
     Instruction type 1: "SAY". Causes a message to appear.
     """
+
     type: str = 'SAY'
     typeID: int = 1
     bytestring = '<BBHhbb'
@@ -45,7 +50,9 @@ class SayInstruction(Instruction):
 
     @classmethod
     def disassemble(cls, value: int):
-        type, bmgID, messageID, gotoIndex, gotoBmg, _ = struct.unpack(cls.bytestring, value.to_bytes(length=8, byteorder='little'))
+        type, bmgID, messageID, gotoIndex, gotoBmg, _ = struct.unpack(
+            cls.bytestring, value.to_bytes(length=8, byteorder='little')
+        )
 
         assert type == cls.typeID
 
@@ -61,6 +68,7 @@ class SwitchInstruction(Instruction):
     Instruction type 2: "SW" ("switch"). Causes execution to branch to
     one of any number of labels, depending on some condition.
     """
+
     type: str = 'SW'
     typeID: int = 2
     bytestring = '<BBHHH'
@@ -72,7 +80,9 @@ class SwitchInstruction(Instruction):
 
     @classmethod
     def disassemble(cls, value: int):
-        type, numLabels, condition, parameter, firstLabel = struct.unpack(cls.bytestring, value.to_bytes(length=8, byteorder='little'))
+        type, numLabels, condition, parameter, firstLabel = struct.unpack(
+            cls.bytestring, value.to_bytes(length=8, byteorder='little')
+        )
 
         assert type == cls.typeID
 
@@ -84,7 +94,7 @@ class SwitchInstruction(Instruction):
             6: SwitchTempFlagInstruction,
             8: SwitchTemp2FlagInstruction,
             27: SwitchShopInstruction,
-            }.get(condition, cls)
+        }.get(condition, cls)
 
         obj = subclass()
         obj.condition = condition
@@ -102,9 +112,11 @@ class _SwitchInstruction_NoParameter(SwitchInstruction):
     Convenience class that implements a SW instruction with no
     parameter.
     """
+
     @property
     def parameter(self):
         return 0
+
     @parameter.setter
     def parameter(self, value):
         pass
@@ -115,6 +127,7 @@ class SwitchResponse2Instruction(_SwitchInstruction_NoParameter):
     A "SW" instruction that checks the player's response to a question
     message with 2 possible responses.
     """
+
     type = 'SW_RESP_2'
 
     def nameForBranch(self, i):
@@ -126,6 +139,7 @@ class SwitchResponse3Instruction(_SwitchInstruction_NoParameter):
     A "SW" instruction that checks the player's response to a question
     message with 3 possible responses.
     """
+
     type = 'SW_RESP_3'
 
     def nameForBranch(self, i):
@@ -137,6 +151,7 @@ class SwitchResponse4Instruction(_SwitchInstruction_NoParameter):
     A "SW" instruction that checks the player's response to a question
     message with 4 possible responses.
     """
+
     type = 'SW_RESP_4'
 
     def nameForBranch(self, i):
@@ -147,12 +162,14 @@ class SwitchProgressFlagInstruction(SwitchInstruction):
     """
     A "SW" instruction that checks a progress flag.
     """
+
     type = 'SW_P_FLAG'
 
     # .flag is an alias for .parameter
     @property
     def flag(self):
         return self.parameter
+
     @flag.setter
     def flag(self, value):
         self.parameter = value
@@ -165,12 +182,14 @@ class SwitchTempFlagInstruction(SwitchInstruction):
     """
     A "SW" instruction that checks a temporary flag.
     """
+
     type = 'SW_T_FLAG'
 
     # .flag is an alias for .parameter
     @property
     def flag(self):
         return self.parameter
+
     @flag.setter
     def flag(self, value):
         self.parameter = value
@@ -183,12 +202,14 @@ class SwitchTemp2FlagInstruction(SwitchInstruction):
     """
     A "SW" instruction that checks a temporary 2 flag.
     """
+
     type = 'SW_T2_FLAG'
 
     # .flag is an alias for .parameter
     @property
     def flag(self):
         return self.parameter
+
     @flag.setter
     def flag(self, value):
         self.parameter = value
@@ -203,6 +224,7 @@ class SwitchShopInstruction(SwitchInstruction):
     in (when parameter == 0).
     Parameter = 3 is used once, and... no clue what it's for.
     """
+
     type = 'SW_SHOP'
 
     def nameForBranch(self, i):
@@ -212,13 +234,14 @@ class SwitchShopInstruction(SwitchInstruction):
             'Anouki General Store',
             'Papuchia Shop',
             'Goron Country Store',
-            ][i]
+        ][i]
 
 
 class DoInstruction(Instruction):
     """
     Instruction type 3: "DO". Causes something to actually happen.
     """
+
     type = 'DO'
     typeID = 3
     bytestring = '<BBhI'
@@ -229,7 +252,9 @@ class DoInstruction(Instruction):
 
     @classmethod
     def disassemble(cls, value: int):
-        type, action, labelNumber, parameter = struct.unpack(cls.bytestring, value.to_bytes(length=8, byteorder='little'))
+        type, action, labelNumber, parameter = struct.unpack(
+            cls.bytestring, value.to_bytes(length=8, byteorder='little')
+        )
 
         assert type == cls.typeID
 
@@ -241,7 +266,7 @@ class DoInstruction(Instruction):
             4: DoSetTempFlagInstruction,
             5: DoClearTempFlagInstruction,
             7: DoLaunchScriptInstruction,
-            }.get(action, cls)
+        }.get(action, cls)
 
         if action == 9:
             print(parameter)
@@ -257,12 +282,14 @@ class DoSetProgressFlagInstruction(DoInstruction):
     """
     A "DO" instruction that sets a progress flag.
     """
+
     type = 'DO_SET_P_FLAG'
 
     # .flag is an alias for .parameter
     @property
     def flag(self):
         return self.parameter
+
     @flag.setter
     def flag(self, value):
         self.parameter = value
@@ -272,12 +299,14 @@ class DoClearProgressFlagInstruction(DoInstruction):
     """
     A "DO" instruction that clears a progress flag.
     """
+
     type = 'DO_CLR_P_FLAG'
 
     # .flag is an alias for .parameter
     @property
     def flag(self):
         return self.parameter
+
     @flag.setter
     def flag(self, value):
         self.parameter = value
@@ -287,12 +316,14 @@ class DoSetTemp2FlagInstruction(DoInstruction):
     """
     A "DO" instruction that sets a temp 2 flag.
     """
+
     type = 'DO_SET_T2_FLAG'
 
     # .flag is an alias for .parameter
     @property
     def flag(self):
         return self.parameter
+
     @flag.setter
     def flag(self, value):
         self.parameter = value
@@ -302,12 +333,14 @@ class DoClearTemp2FlagInstruction(DoInstruction):
     """
     A "DO" instruction that clears a temp 2 flag.
     """
+
     type = 'DO_CLR_T2_FLAG'
 
     # .flag is an alias for .parameter
     @property
     def flag(self):
         return self.parameter
+
     @flag.setter
     def flag(self, value):
         self.parameter = value
@@ -317,12 +350,14 @@ class DoSetTempFlagInstruction(DoInstruction):
     """
     A "DO" instruction that sets a temp flag.
     """
+
     type = 'DO_SET_T_FLAG'
 
     # .flag is an alias for .parameter
     @property
     def flag(self):
         return self.parameter
+
     @flag.setter
     def flag(self, value):
         self.parameter = value
@@ -332,12 +367,14 @@ class DoClearTempFlagInstruction(DoInstruction):
     """
     A "DO" instruction that clears a temp flag.
     """
+
     type = 'DO_CLR_T_FLAG'
 
     # .flag is an alias for .parameter
     @property
     def flag(self):
         return self.parameter
+
     @flag.setter
     def flag(self, value):
         self.parameter = value
@@ -347,11 +384,13 @@ class DoLaunchScriptInstruction(DoInstruction):
     """
     A "DO" instruction that immediately launches a different script.
     """
+
     type = 'DO_SCRPT'
 
     @property
     def parameter(self):
         return ((self.scriptID & 0xFFFF) << 16) | (self.scriptID >> 16)
+
     @parameter.setter
     def parameter(self, value):
         self.scriptID = ((value & 0xFFFF) << 16) | (value >> 16)
@@ -372,7 +411,9 @@ def disassembleInstruction(instruction: bytes):
         1: SayInstruction,
         2: SwitchInstruction,
         3: DoInstruction,
-        }[instID].disassemble(instruction)
+    }[
+        instID
+    ].disassemble(instruction)
 
 
 def disassembleInstructions(instructions):

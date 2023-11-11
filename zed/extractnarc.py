@@ -6,4 +6,5 @@ def saveTo(folder, path):
         with open(os.path.join(path, filename), 'wb') as f:
             f.write(filedata)
 
+
 saveTo(courseNarc, os.path.join('../Testing/phMap', courseFilename))

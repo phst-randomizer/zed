@@ -1,13 +1,14 @@
-import os, os.path
+import os
+import os.path
 import sys
 
-import ndspy.bmg, ndspy.rom
+import ndspy.bmg
+import ndspy.rom
 
 
 class ScriptRunner:
     def __init__(self, bmgs):
         self.bmgs = bmgs
-
 
     def runScript(self, scriptID):
         """
@@ -23,11 +24,9 @@ class ScriptRunner:
             print("Sorry, but there's no script with that ID. :/")
             return
 
-        while (self.nextBmgID not in (0xFF, -1)
-                and self.nextInstructionIdx not in (0xFFFF, -1)):
+        while self.nextBmgID not in (0xFF, -1) and self.nextInstructionIdx not in (0xFFFF, -1):
             self.runInstruction()
         print('(End of script.)\n')
-
 
     def runInstruction(self):
         """
@@ -45,7 +44,6 @@ class ScriptRunner:
             self.runInstructionType3(instruction)
         else:
             raise RuntimeError(f'Found an instruction with type {instructionType}...?')
-
 
     def runInstructionType1(self, instruction):
         """
@@ -78,7 +76,7 @@ class ScriptRunner:
             else:
                 currentlyPrintingTo.append(str(part))
 
-        stringMessage = "".join(partsToPrint).rstrip()
+        stringMessage = ''.join(partsToPrint).rstrip()
         print(f'\033[3m"{stringMessage}"\033[0m')
         self.response1 = ''.join(response1)
         self.response2 = ''.join(response2)
@@ -87,7 +85,6 @@ class ScriptRunner:
 
         self.nextBmgID = nextBmgID
         self.nextInstructionIdx = nextInstIdx
-
 
     def runInstructionType2(self, instruction):
         """
@@ -103,8 +100,9 @@ class ScriptRunner:
             print(f"Can't branch to label +{n} -- only +0 through +{labelsCount-1} are allowed...")
             n = self.checkCondition(whatToCheckFor, parameter)
 
-        self.nextBmgID, self.nextInstructionIdx = self.bmgs[self.nextBmgID].labels[baseLabelNumber + n]
-
+        self.nextBmgID, self.nextInstructionIdx = self.bmgs[self.nextBmgID].labels[
+            baseLabelNumber + n
+        ]
 
     def runInstructionType3(self, instruction):
         """
@@ -117,19 +115,16 @@ class ScriptRunner:
 
         self.nextBmgID, self.nextInstructionIdx = self.bmgs[self.nextBmgID].labels[labelNumber]
 
-
     def checkCondition(self, type, parameter):
         """
         Check a condition.
         """
 
-        def process(x): return int(x)
+        def process(x):
+            return int(x)
 
-        if type in [1, 2, 3]: # Response to a question
-            responses = [self.response1,
-                         self.response2,
-                         self.response3,
-                         self.response4][:type + 1]
+        if type in [1, 2, 3]:  # Response to a question
+            responses = [self.response1, self.response2, self.response3, self.response4][: type + 1]
             shortcuts = [''] * len(responses)
             chars = 0
             while len(set(shortcuts)) < len(shortcuts):
@@ -143,10 +138,11 @@ class ScriptRunner:
                 else:
                     raise ValueError
 
-        elif type == 4: # Checking a flag?
+        elif type == 4:  # Checking a flag?
             index = parameter >> 5
             bit = parameter & 0x1F
             prompt = f'Is bit {bit} of global value {index} set? (Y/N): '
+
             def process(x):
                 if x.lower() == 'y':
                     return 0
@@ -155,7 +151,7 @@ class ScriptRunner:
                 else:
                     raise ValueError
 
-        else: # Undocumented
+        else:  # Undocumented
             prompt = f'Enter the result of check_{type}({parameter}): '
 
         while True:
@@ -163,7 +159,6 @@ class ScriptRunner:
                 return process(input(prompt))
             except ValueError:
                 prompt = 'wat '
-
 
 
 def getScriptID():
@@ -220,4 +215,5 @@ def main():
     print('Closing.')
 
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    main()

@@ -7,7 +7,8 @@
 
 import collections
 import json
-import os, os.path
+import os
+import os.path
 import struct
 import sys
 
@@ -15,9 +16,7 @@ import ndspy.lz10
 import ndspy.narc
 import ndspy.rom
 
-from . import common
-from . import zmb
-
+from . import common, zmb
 
 PH_ROM_IN = '../Testing/Zelda - Phantom Hourglass.nds'
 PH_ROM_OUT = '../Testing/Zelda - Phantom Hourglass - Testing.nds'
@@ -25,13 +24,13 @@ ST_ROM_IN = '../Testing/Zelda - Spirit Tracks.nds'
 ST_ROM_OUT = '../Testing/Zelda - Spirit Tracks - Testing.nds'
 
 
-
 courseNames = {}
 if os.path.isfile('courses.txt'):
     with open('courses.txt', 'r', encoding='utf-8') as f:
         d = f.read()
     for L in d.splitlines():
-        if not L: continue
+        if not L:
+            continue
         courseNames[L.split(':')[0].strip()] = L.split(':')[1].strip()
 
 
@@ -45,14 +44,18 @@ def parseCourselist(courseInit, courseList):
     finalList = []
 
     if initExists:
-        zcibMagic, initUnk04, entriesCountInit1, entriesCountInit2 = struct.unpack_from('<4s3I', courseInit)
+        zcibMagic, initUnk04, entriesCountInit1, entriesCountInit2 = struct.unpack_from(
+            '<4s3I', courseInit
+        )
     zclbMagic, listUnk04, entriesCount1, entriesCount2 = struct.unpack_from('<4s3I', courseList)
 
     initOffset = listOffset = 0x10
     for i in range(entriesCount1):
         if initExists:
             initEntryLength = struct.unpack_from('<I', courseInit, initOffset)[0]
-            entryName = courseInit[initOffset + 4 : initOffset + 0x14].rstrip(b'\0').decode('shift-jis')
+            entryName = (
+                courseInit[initOffset + 4 : initOffset + 0x14].rstrip(b'\0').decode('shift-jis')
+            )
         else:
             initEntryLength = 0
             entryName = ''
@@ -68,9 +71,7 @@ def parseCourselist(courseInit, courseList):
     return finalList
 
 
-
 def main():
-
     argv = sys.argv
 
     exportFile = importFile = False
@@ -88,8 +89,8 @@ def main():
     ioName = 'f_first/0'
 
     gameRomFilenames = []
-    #gameRomFilenames.append((common.Game.PhantomHourglass, PH_ROM_IN, PH_ROM_OUT))
-    gameRomFilenames.append((common.Game.SpiritTracks,     ST_ROM_IN, ST_ROM_OUT))
+    # gameRomFilenames.append((common.Game.PhantomHourglass, PH_ROM_IN, PH_ROM_OUT))
+    gameRomFilenames.append((common.Game.SpiritTracks, ST_ROM_IN, ST_ROM_OUT))
     for game, romIn, romOut in gameRomFilenames:
         with open(romIn, 'rb') as f:
             romData = f.read()
@@ -110,34 +111,35 @@ def main():
         courses = parseCourselist(courseInit, courseList)
 
         for courseName, courseFilename in courses:
-            #print(courseFilename)
-            if ioName.split('/')[0] != courseFilename: continue
+            # print(courseFilename)
+            if ioName.split('/')[0] != courseFilename:
+                continue
 
             courseFolderName = 'Map/' + courseFilename
-            if courseFolderName not in rom.filenames: continue
+            if courseFolderName not in rom.filenames:
+                continue
             courseFolder = rom.filenames[courseFolderName]
 
             # Get stuff from course.bin
             courseBin = rom.files[courseFolder['course.bin']]
-            courseNarcNames, courseNarcFiles = \
-                ndspy.narc.load(ndspy.lz10.decompress(courseBin))
+            courseNarcNames, courseNarcFiles = ndspy.narc.load(ndspy.lz10.decompress(courseBin))
             resaveCourse = False
 
             # Load map**.bin's
 
             for mapNumber in range(100):
-                if int(ioName.split('/')[1]) != mapNumber: continue
+                if int(ioName.split('/')[1]) != mapNumber:
+                    continue
                 mapBinFn = 'map%02d.bin' % mapNumber
-                if mapBinFn not in courseFolder: continue
+                if mapBinFn not in courseFolder:
+                    continue
 
                 mapBin = rom.files[courseFolder[mapBinFn]]
-                mapNarcNames, mapNarcFiles = \
-                    ndspy.narc.load(ndspy.lz10.decompress(mapBin))
+                mapNarcNames, mapNarcFiles = ndspy.narc.load(ndspy.lz10.decompress(mapBin))
 
                 # Load the ZCB and ZMB files
                 zmbFile = mapNarcFiles[mapNarcNames['zmb'].firstID]
                 map = zmb.ZMB(game, zmbFile)
-
 
                 if exportFile:
                     files = {}
@@ -147,10 +149,14 @@ def main():
 
                     def saveSection(L):
                         return b''.join(x.save(game) for x in L)
+
                     def savePaths(L):
                         outData = bytearray()
+
                         def pad():
-                            while len(outData) % 0x24: outData.extend(b'\0')
+                            while len(outData) % 0x24:
+                                outData.extend(b'\0')
+
                         for p in L:
                             outData.extend(p.save(game))
                             pad()
@@ -203,7 +209,18 @@ def main():
                     print(f'Importing map {mapNumber} to {courseNames[courseFilename]}...')
 
                     files = {}
-                    for section in ['LDLB', 'ROMB', 'ARAB', 'RALB', 'WARP', 'CAME', 'CMPT', 'PLYR', 'MPOB', 'NPCA']:
+                    for section in [
+                        'LDLB',
+                        'ROMB',
+                        'ARAB',
+                        'RALB',
+                        'WARP',
+                        'CAME',
+                        'CMPT',
+                        'PLYR',
+                        'MPOB',
+                        'NPCA',
+                    ]:
                         with open(f'zmb_export/{section}.bin', 'rb') as f:
                             files[section] = f.read()
                     with open(f'zmb_export/meta.json', 'r', encoding='utf-8') as f:
@@ -215,14 +232,15 @@ def main():
                             d2 = d[i * width : i * width + width]
                             L.append(t(game, d2))
                         return L
+
                     def makePaths(d):
                         L = []
                         i = 0
                         while i < len(d):
                             if game == common.Game.PhantomHourglass:
-                                header = d[i:i+12]
+                                header = d[i : i + 12]
                             else:
-                                header = d[i:i+8]
+                                header = d[i : i + 8]
                             path = zmb.Path(game, header)
                             i += 0x24
                             for j in range(header[1]):
@@ -230,11 +248,11 @@ def main():
                                     nodeLen = 0x0C
                                 else:
                                     nodeLen = d[i + 0x12]
-                                nodeData = d[i:i+nodeLen]
+                                nodeData = d[i : i + nodeLen]
                                 node = zmb.PathNode(game, nodeData)
                                 path.nodes.append(node)
                                 i += 0x24
-                            i += 0x24 # the separator line
+                            i += 0x24  # the separator line
                             L.append(path)
                         return L
 
@@ -258,14 +276,20 @@ def main():
                     map.roomUnk1C = meta['ROOM']['unk_1C']
                     map.roomUnk1D = meta['ROOM']['unk_1D']
                     map.roomUnk1E = meta['ROOM']['unk_1E']
-                    map.ARAB = makeSection(zmb.ARAB, files['ARAB'],
-                        0x0C if game == common.Game.PhantomHourglass else 0x10)
+                    map.ARAB = makeSection(
+                        zmb.ARAB,
+                        files['ARAB'],
+                        0x0C if game == common.Game.PhantomHourglass else 0x10,
+                    )
                     map.paths = makePaths(files['RALB'])
                     map.exits = makeSection(zmb.Exit, files['WARP'], 0x18)
                     map.CAME = makeSection(zmb.CAME, files['CAME'], 0x1C)
                     map.CMPT = makeSection(zmb.CMPT, files['CMPT'], 0x10)
-                    map.entrances = makeSection(zmb.Entrance, files['PLYR'],
-                        0x10 if game == common.Game.PhantomHourglass else 0x14)
+                    map.entrances = makeSection(
+                        zmb.Entrance,
+                        files['PLYR'],
+                        0x10 if game == common.Game.PhantomHourglass else 0x14,
+                    )
                     map.mapObjects = makeSection(zmb.MapObject, files['MPOB'], 0x1C)
                     map.actors = makeSection(zmb.Actor, files['NPCA'], 0x20)
 
@@ -274,11 +298,11 @@ def main():
                     newMapBin = ndspy.lz10.compress(ndspy.narc.save(mapNarcNames, mapNarcFiles))
                     rom.files[courseFolder[mapBinFn]] = newMapBin
 
-
             if importFile:
-                newCourseBin = ndspy.lz10.compress(ndspy.narc.save(courseNarcNames, courseNarcFiles))
+                newCourseBin = ndspy.lz10.compress(
+                    ndspy.narc.save(courseNarcNames, courseNarcFiles)
+                )
                 rom.files[courseFolder['course.bin']] = newCourseBin
-
 
         romDataOut = rom.save()
         with open(romOut, 'wb') as f:

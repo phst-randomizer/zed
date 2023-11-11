@@ -7,16 +7,13 @@ import ndspy.lz10
 import ndspy.narc
 import ndspy.rom
 
-
 GET_ITEM = 101
 
 ROM_IN = 'Testing/Zelda - Spirit Tracks.nds'
 ROM_OUT = 'Testing/Zelda - Spirit Tracks - Testing.nds'
 
 
-
 def main():
-
     with open(ROM_IN, 'rb') as f:
         romData = f.read()
     rom = ndspy.rom.NintendoDSRom(romData)
@@ -33,7 +30,7 @@ def main():
 
     cmdIdx = 0x9F
 
-    numCmds = 2#117
+    numCmds = 2  # 117
     for i in range(numCmds):
         # GET_ITEM = i
         # if GET_ITEM in [21, 22, 23, 24]: GET_ITEM = 17
@@ -41,19 +38,18 @@ def main():
         cmd = struct.pack('<BBHI', 3, 9, i, GET_ITEM)
         if i == 1:
             cmd = struct.pack('<BBHI', 3, 0, i, 0x2BE)
-        villageBmg[commandsStart + cmdIdx * 8:commandsStart + cmdIdx * 8 + 8] = cmd
+        villageBmg[commandsStart + cmdIdx * 8 : commandsStart + cmdIdx * 8 + 8] = cmd
         nextCmd = cmdIdx + 1 if i != (numCmds - 1) else 0xFFFF
         villageBmg[labelsStart + i * 2 : labelsStart + i * 2 + 2] = struct.pack('<H', nextCmd)
         villageBmg[labelBmgsStart + i] = 0x14
         cmdIdx += 1
-    
+
     # for i in range(117):
     #     thisCmdIdx = lastCmdIdx + 1
     #     labelValue = struct.unpack_from('<H', villageBmg, labelsStart + 2 * lastCmdIdx)
     #     while labelValue == 0xFFFF:
     #         thisCmdIdx += 1
     #         labelValue = struct.unpack_from('<H', villageBmg, labelsStart + 2 * lastCmdIdx)
-
 
     # "2" is the first label that's FF/FFFF
     # cmd = struct.pack('<BBHI', 3, 9, 2, GET_ITEM)

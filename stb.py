@@ -1,5 +1,5 @@
-
-import os, os.path
+import os
+import os.path
 import struct
 
 
@@ -25,8 +25,9 @@ def analyzeStb(filename, data):
 
         if sectionMagic == b'JFVB':
             # Script
-            fvbMagic, fvbBom, hex_oneHundred, fvbLen, numEntries = \
-                struct.unpack_from('<4sHHII', data, fileOffs + 8)
+            fvbMagic, fvbBom, hex_oneHundred, fvbLen, numEntries = struct.unpack_from(
+                '<4sHHII', data, fileOffs + 8
+            )
             assert fvbMagic == b'FVB\0'
             assert fvbBom == 0xFEFF
             assert hex_oneHundred == 0x0100
@@ -34,7 +35,9 @@ def analyzeStb(filename, data):
 
             pointer2 = fileOffs + 0x18
             for j in range(numEntries):
-                thingLen, something1, something2, something3 = struct.unpack_from('<IIHH', data, pointer2)
+                thingLen, something1, something2, something3 = struct.unpack_from(
+                    '<IIHH', data, pointer2
+                )
 
                 if thingLen == 20:
                     assert (something1, something2, something3) == (2, 4, 1)
@@ -45,13 +48,21 @@ def analyzeStb(filename, data):
 
                 else:
                     assert (something1, something2, something3) == (6, 8, 18)
-                    something4, something5, innerEntriesLenPlus4, something7, numEntriesInner, something9, something10, something11 = \
-                        struct.unpack_from('<II6H', data, pointer2 + 12)
+                    (
+                        something4,
+                        something5,
+                        innerEntriesLenPlus4,
+                        something7,
+                        numEntriesInner,
+                        something9,
+                        something10,
+                        something11,
+                    ) = struct.unpack_from('<II6H', data, pointer2 + 12)
 
                     assert something4 == 0
                     # something5's tend to come in groups; are too big to be offsets
                     assert something7 in [1, 21]
-                    
+
                     assert numEntriesInner == (innerEntriesLenPlus4 - 4) / 12
 
                     if something7 == 1:
@@ -68,8 +79,9 @@ def analyzeStb(filename, data):
                         assert something10 == thingLen - 0x24
                         assert something11 == 1
 
-                        numEntriesInner2, something12, something13 = \
-                            struct.unpack_from('<HHI', data, pointer2 + 32)
+                        numEntriesInner2, something12, something13 = struct.unpack_from(
+                            '<HHI', data, pointer2 + 32
+                        )
 
                         assert numEntriesInner2 == (thingLen - 40) / 12
                         assert something12 == 0x3000
@@ -108,7 +120,7 @@ def analyzeStb(filename, data):
             # Message
             zero, nameLen = struct.unpack_from('<HH', data, fileOffs + 8)
             name = data[fileOffs + 0x0C : fileOffs + 0x0C + nameLen - 1]
-            assert name in [b'Message', b'message', b'MSG', b'Massage'] # YUP. Massage.
+            assert name in [b'Message', b'message', b'MSG', b'Massage']  # YUP. Massage.
 
         elif sectionMagic == b'\xFF\xFF\xFF\xFF':
             # Environment/control
@@ -133,6 +145,7 @@ def main():
             with open(os.path.join(folder, file), 'rb') as f:
                 d = f.read()
             analyzeStb(file, d)
+
 
 main()
 

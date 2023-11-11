@@ -1,6 +1,4 @@
-
-from . import common
-from . import zclb_zcib
+from . import common, zclb_zcib
 
 with open('../RETAIL/st/root/Course/courseinit.cib', 'rb') as f:
     ci = f.read()

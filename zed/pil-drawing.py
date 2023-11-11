@@ -1,6 +1,9 @@
 IMGW, IMGH = 500, 500
-import PIL.Image, PIL.ImageDraw, PIL.ImageFont
-image = PIL.Image.new('RGBA', (IMGW, IMGH), (0,0,0,0))
+import PIL.Image
+import PIL.ImageDraw
+import PIL.ImageFont
+
+image = PIL.Image.new('RGBA', (IMGW, IMGH), (0, 0, 0, 0))
 
 stuff.append((True, npcType, xPos, yPos))
 
@@ -23,12 +26,11 @@ stuff.append((True, npcType, xPos, yPos))
 #         color = (0,0,0,255) if isNpc else (255,0,0,255)
 #         draw.text((x, y), objType, color, font=font)
 
-return image
+# return image
 
 
-courseImg = parseZmb(zmbFile)
-        courseImg.save(f'courses/{courseFilename}.png')
-
+# courseImg = parseZmb(zmbFile)
+#         courseImg.save(f'courses/{courseFilename}.png')
 
 
 # Record ZAB sizes:

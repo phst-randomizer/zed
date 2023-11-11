@@ -5,20 +5,15 @@
 # License: GNU GPL v3
 
 
-import os, os.path
+import os
+import os.path
 import struct
 
 import ndspy.lz10
 import ndspy.narc
 import ndspy.rom
 
-from . import common
-from . import zab
-from . import zcb
-from . import zclb_zcib
-from . import zmb
-from . import zob
-
+from . import common, zab, zcb, zclb_zcib, zmb, zob
 
 PH_ROM_IN = '../Testing/Zelda - Phantom Hourglass.nds'
 PH_ROM_OUT = '../Testing/Zelda - Phantom Hourglass - Testing.nds'
@@ -31,18 +26,15 @@ if os.path.isfile('courses.txt'):
     with open('courses.txt', 'r', encoding='utf-8') as f:
         d = f.read()
     for L in d.splitlines():
-        if not L: continue
+        if not L:
+            continue
         courseNames[L.split(':')[0].strip()] = L.split(':')[1].strip()
 
 
-
-
-
 def main():
-
     gameRomFilenames = []
-    #gameRomFilenames.append((common.Game.PhantomHourglass, PH_ROM_IN, PH_ROM_OUT))
-    gameRomFilenames.append((common.Game.SpiritTracks,     ST_ROM_IN, ST_ROM_OUT))
+    # gameRomFilenames.append((common.Game.PhantomHourglass, PH_ROM_IN, PH_ROM_OUT))
+    gameRomFilenames.append((common.Game.SpiritTracks, ST_ROM_IN, ST_ROM_OUT))
     for game, romIn, romOut in gameRomFilenames:
         with open(romIn, 'rb') as f:
             romData = f.read()
@@ -61,7 +53,6 @@ def main():
             raise RuntimeError('Are you sure this is a Zelda rom?')
 
         courseEntries = zclb_zcib.loadCourseListAndInit(game, courseList, courseInit)
-
 
         # assert courseList == courseListNew
         # assert courseInit == courseInitNew
@@ -119,13 +110,13 @@ def main():
             courseName = entry.title
 
             courseFolderName = 'Map/' + courseFilename
-            if courseFolderName not in rom.filenames: continue
+            if courseFolderName not in rom.filenames:
+                continue
             courseFolder = rom.filenames[courseFolderName]
 
             # Get stuff from course.bin
             courseBin = rom.files[courseFolder['course.bin']]
-            courseNarcNames, courseNarcFiles = \
-                ndspy.narc.load(ndspy.lz10.decompress(courseBin))
+            courseNarcNames, courseNarcFiles = ndspy.narc.load(ndspy.lz10.decompress(courseBin))
             resaveCourse = False
 
             # The zab is always the only file in the "arrange" folder
@@ -150,11 +141,11 @@ def main():
 
             for mapNumber in range(100):
                 mapBinFn = 'map%02d.bin' % mapNumber
-                if mapBinFn not in courseFolder: continue
+                if mapBinFn not in courseFolder:
+                    continue
 
                 mapBin = rom.files[courseFolder[mapBinFn]]
-                mapNarcNames, mapNarcFiles = \
-                    ndspy.narc.load(ndspy.lz10.decompress(mapBin))
+                mapNarcNames, mapNarcFiles = ndspy.narc.load(ndspy.lz10.decompress(mapBin))
 
                 # SUBFOLDERS OF MAP.BIN
                 # mcb: PH: one optional {courseFilename}_{mapNumber}.mcb file
@@ -190,20 +181,21 @@ def main():
                 if nsbmdFolder.files:
                     model = mapNarcFiles[nsbmdFolder.firstID]
                     isTA = nsbmdFolder.files[0].endswith('.nsbta')
-                
+
                 # Load the camera files (Spirit Tracks-only)
                 cameraFiles = {}
                 if 'zbcd' in mapNarcNames:
                     zbcdFolder = mapNarcNames['zbcd']
                     for camFileNum, camFilename in enumerate(zbcdFolder.files):
-                        cameraFiles[int(camFilename[-7:-5])] = \
-                            mapNarcFiles[zbcdFolder.firstID + camFileNum]
-                
+                        cameraFiles[int(camFilename[-7:-5])] = mapNarcFiles[
+                            zbcdFolder.firstID + camFileNum
+                        ]
+
                 # Load the ZCB and ZMB files
-                #if courseFilename not in ['f_first', 'f_htown', 'd_main', 'e3_dungeon']: continue
+                # if courseFilename not in ['f_first', 'f_htown', 'd_main', 'e3_dungeon']: continue
                 zcbFile = mapNarcFiles[mapNarcNames['zcb'].firstID]
                 zmbFile = mapNarcFiles[mapNarcNames['zmb'].firstID]
-                #print(f'{courseFilename}/%02d' % mapNumber)
+                # print(f'{courseFilename}/%02d' % mapNumber)
                 map = zmb.ZMB(game, zmbFile)
                 if map.CAME:
                     print(f'{len(map.CAME)}: {courseFilename}/%02d' % mapNumber)
@@ -227,7 +219,9 @@ def main():
                             break
                     else:
                         break
-                    npcTypes.append(zob.ZOB(game, mapNarcFiles[mapNarcNames.idOf('zob/' + zobFile)]))
+                    npcTypes.append(
+                        zob.ZOB(game, mapNarcFiles[mapNarcNames.idOf('zob/' + zobFile)])
+                    )
 
                 if game == common.Game.PhantomHourglass:
                     assert len(moTypes) == 2
@@ -235,7 +229,6 @@ def main():
                 else:
                     assert len(moTypes) == 10
                     assert len(npcTypes) == 10
-
 
                 # # TESTING
                 # sortedActorsList = [n.type for n in map.actors]
@@ -247,11 +240,10 @@ def main():
                 # print(sortedActorsList)
                 # print()
 
-
                 zmbFile2 = map.save(game)
-                resaveMap = (zmbFile != zmbFile2)
+                resaveMap = zmbFile != zmbFile2
                 assert not resaveMap
-                #map.renderPNG().save(f'courses/{courseFilename}_%02d.png' % mapNumber)
+                # map.renderPNG().save(f'courses/{courseFilename}_%02d.png' % mapNumber)
 
                 if resaveMap:
                     mapNarcFiles[mapNarcFiles.index(zmbFile)] = zmbFile2
@@ -259,11 +251,11 @@ def main():
                     newMapBin = ndspy.lz10.compress(ndspy.narc.save(mapNarcNames, mapNarcFiles))
                     rom.files[courseFolder[mapBinFn]] = newMapBin
 
-
             if resaveCourse:
-                newCourseBin = ndspy.lz10.compress(ndspy.narc.save(courseNarcNames, courseNarcFiles))
+                newCourseBin = ndspy.lz10.compress(
+                    ndspy.narc.save(courseNarcNames, courseNarcFiles)
+                )
                 rom.files[courseFolder['course.bin']] = newCourseBin
-
 
         # Resave courselist/courseinit
         courseListNew, courseInitNew = zclb_zcib.saveCourseListAndInit(game, courseEntries)
@@ -273,7 +265,6 @@ def main():
             rom.files[rom.filenames['Map/courselist.clb']] = courseListNew
         elif 'Course/courselist.clb' in rom.filenames:
             rom.files[rom.filenames['Course/courselist.clb']] = courseListNew
-
 
         romDataOut = rom.save()
         with open(romOut, 'wb') as f:

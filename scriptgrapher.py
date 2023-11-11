@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import argparse
-import os, os.path
-from pathlib import Path
+import os
+import os.path
 import textwrap
+from pathlib import Path
 
 import ndspy.bmg
 import pygraphviz
@@ -50,7 +51,7 @@ def findRuns(
     Find run indices in this BMG.
     """
 
-    xrefs = [set() for _ in insts] # "None" = is a script start
+    xrefs = [set() for _ in insts]  # "None" = is a script start
     for i, inst in enumerate(insts):
         for _, n in nextInstructions_filterBmg(inst, bmg):
             xrefs[n].add(i)
@@ -67,7 +68,6 @@ def findRuns(
 
         # If this run leads to exactly one other, and nothing else leads to that one...
         if len(next) == 1 and len(xrefs[next[0][1]]) == 1:
-
             # (Find the run it leads to)
             for g2 in runs:
                 if g2[0] == next[0][1]:
@@ -75,7 +75,7 @@ def findRuns(
             else:
                 raise RuntimeError("Didn't find the run :|")
 
-            if g is not g2: # ...and if that run isn't ourself...
+            if g is not g2:  # ...and if that run isn't ourself...
                 # Combine the runs.
                 g.extend(g2)
                 runs.remove(g2)
@@ -107,7 +107,7 @@ def analyze(
 
     print(filename)
 
-    bmgID = [a for (a,(b,c)) in allBmgs.items() if c is bmg][0]
+    bmgID = [a for (a, (b, c)) in allBmgs.items() if c is bmg][0]
 
     insts = zeldaScripts.disassembleInstructions(bmg.instructions)
     labels = zeldaScripts.disassembleLabels(bmg.labels)
@@ -149,19 +149,22 @@ def analyze(
         MARK_1 = {'color': 'green', 'penwidth': 10}
 
         attrs = {}
-        #print(list(insts))
+        # print(list(insts))
         for inst in insts:
             # if isinstance(inst, zeldaScripts.DoInstruction) and inst.action == 9 and 101 <= inst.parameter <= 105:
             #     print(f'Instruction found! Parameter = {inst.parameter}')
             #     attrs.update(MARK_1)
-            if isinstance(inst, zeldaScripts.SayInstruction) and inst.messageBMG == 0xF and inst.messageID == 188:
-                print(f'Instruction found!')# Parameter = {inst.parameter}')
+            if (
+                isinstance(inst, zeldaScripts.SayInstruction)
+                and inst.messageBMG == 0xF
+                and inst.messageID == 188
+            ):
+                print(f'Instruction found!')  # Parameter = {inst.parameter}')
                 attrs.update(MARK_1)
 
         return attrs
 
     for text, r in zip(runTexts, runs):
-
         lastInst = insts[r[-1]]
         nextIdxs = nextInstructions_filterBmg(lastInst, bmg)
 
@@ -190,19 +193,18 @@ def analyze(
     Path('graphs/').mkdir(exist_ok=True)
 
     # circo is good but sometimes crashes; fdp is worse but reliable
-    try:
-        H = G.copy()
-        H.layout('circo')
-        H.draw(f'graphs/{filename.split(".")[0]}.png')
-    except:
-        H = G.copy()
-        H.layout('fdp')
-        H.draw(f'graphs/{filename.split(".")[0]}.png')
-
+    # try:
+    #     H = G.copy()
+    #     H.layout('circo')
+    #     H.draw(f'graphs/{filename.split(".")[0]}.png')
+    # except:
+    #     H = G.copy()
+    #     H.layout('fdp')
+    #     H.draw(f'graphs/{filename.split(".")[0]}.png')
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="scriptgrapher")
+    parser = argparse.ArgumentParser(prog='scriptgrapher')
     parser.add_argument('bmg_dir')
     args = parser.parse_args()
 
@@ -217,7 +219,6 @@ def main():
 
         bmg = ndspy.bmg.BMG(d)
         BMGs[bmg.id] = (fn, bmg)
-
 
     allScripts: dict[int, set[int]] = {}
     for id, (fn, bmg) in BMGs.items():

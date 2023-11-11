@@ -14,8 +14,9 @@ class ZOB:
             self.entries = []
 
     def _initFromData(self, game, data):
-        magic, fileLen, self.unk08, self.unk0A, entriesCount, self.unk0E = \
-            struct.unpack_from('<4sI4h', data, 0)
+        magic, fileLen, self.unk08, self.unk0A, entriesCount, self.unk0E = struct.unpack_from(
+            '<4sI4h', data, 0
+        )
         assert magic == b'ZOLB'
 
         textBlob = data[0x10 : 0x10 + 4 * entriesCount].decode('latin-1')
@@ -33,7 +34,6 @@ class ZOB:
             else:
                 self.entries.append(struct.unpack_from('<I', data, 0x10 + 4 * i)[0])
 
-
     def save(self, game):
         """
         Save the ZOB back to a bytes object.
@@ -47,15 +47,25 @@ class ZOB:
             else:
                 data.extend(e.encode('ascii')[::-1])
 
-        struct.pack_into('<4sI4h', data, 0,
-            b'ZOLB', len(data), self.unk08, self.unk0A, len(self.entries),
-            self.unk0E)
+        struct.pack_into(
+            '<4sI4h',
+            data,
+            0,
+            b'ZOLB',
+            len(data),
+            self.unk08,
+            self.unk0A,
+            len(self.entries),
+            self.unk0E,
+        )
 
         return data
 
-
     def __eq__(self, other):
-        if self.unk08 != other.unk08: return False
-        if self.unk0A != other.unk0A: return False
-        if self.unk0E != other.unk0E: return False
+        if self.unk08 != other.unk08:
+            return False
+        if self.unk0A != other.unk0A:
+            return False
+        if self.unk0E != other.unk0E:
+            return False
         return self.entries == other.entries

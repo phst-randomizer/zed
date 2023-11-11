@@ -6,7 +6,8 @@
 
 
 import json
-import os, os.path
+import os
+import os.path
 import struct
 import sys
 
@@ -14,27 +15,40 @@ import ndspy.lz10
 import ndspy.narc
 import ndspy.rom
 
-from . import common
-from . import zclb_zcib
-
+from . import common, zclb_zcib
 
 ST_ROM_IN = '../Testing/Zelda - Spirit Tracks.nds'
 ST_ROM_OUT = '../Testing/Zelda - Spirit Tracks - Testing.nds'
 
 
-PROPERTY_NAMES = ['name', 'title',
-                  'unk14',
-                  'unk19', 'nameID', 'unk1B',
-                  'topScreenMode', 'unk1E', 'unk1F',
-                  'sdatGroupID', 'unk22', 'unk23',
-                  'mapDrawID', 'unk25', 'unk26', 'unk27',
-                  'dungeonID',
-                  'vehicleCourse', 'initUnk16',
-                  'bmgID',
-                  'initUnk1C', 'initUnk1E',
-                  'initUnk20', 'initUnk22',
-                  'initUnk24', 'initUnk26',
-                  ]
+PROPERTY_NAMES = [
+    'name',
+    'title',
+    'unk14',
+    'unk19',
+    'nameID',
+    'unk1B',
+    'topScreenMode',
+    'unk1E',
+    'unk1F',
+    'sdatGroupID',
+    'unk22',
+    'unk23',
+    'mapDrawID',
+    'unk25',
+    'unk26',
+    'unk27',
+    'dungeonID',
+    'vehicleCourse',
+    'initUnk16',
+    'bmgID',
+    'initUnk1C',
+    'initUnk1E',
+    'initUnk20',
+    'initUnk22',
+    'initUnk24',
+    'initUnk26',
+]
 
 
 def listInit2Json(entries):
@@ -66,11 +80,9 @@ def json2ListInit(entries):
     return L
 
 
-
 def main():
-
     argv = sys.argv
-    #argv = [None, 'export', 'temp.json']
+    # argv = [None, 'export', 'temp.json']
     if len(argv) < 3:
         print('Not enough arguments :|')
         print(f'Usage: {argv[0]} export filename.json')
@@ -89,7 +101,7 @@ def main():
     ioName = argv[2]
 
     gameRomFilenames = []
-    gameRomFilenames.append((common.Game.SpiritTracks,     ST_ROM_IN, ST_ROM_OUT))
+    gameRomFilenames.append((common.Game.SpiritTracks, ST_ROM_IN, ST_ROM_OUT))
     for game, romIn, romOut in gameRomFilenames:
         with open(romIn, 'rb') as f:
             romData = f.read()
@@ -110,20 +122,17 @@ def main():
         # Load the copy from the rom
         courseEntries = zclb_zcib.loadCourseListAndInit(game, courseList, courseInit)
 
-
         # Export if needed
         if exportFile:
             entriesSerialized = listInit2Json(courseEntries)
             with open(ioName, 'w', encoding='utf-8') as f:
                 json.dump(entriesSerialized, f, indent=4, ensure_ascii=False)
 
-
         # Import if needed
         if importFile:
             with open(ioName, 'r', encoding='utf-8') as f:
                 entriesSerialized = json.load(f)
             courseEntries = json2ListInit(entriesSerialized)
-
 
         # Resave courselist/courseinit
         courseListNew, courseInitNew = zclb_zcib.saveCourseListAndInit(game, courseEntries)
@@ -133,7 +142,6 @@ def main():
             rom.files[rom.filenames['Map/courselist.clb']] = courseListNew
         elif 'Course/courselist.clb' in rom.filenames:
             rom.files[rom.filenames['Course/courselist.clb']] = courseListNew
-
 
         romDataOut = rom.save()
         with open(romOut, 'wb') as f:
