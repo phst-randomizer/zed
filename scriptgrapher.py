@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import os, os.path
+from pathlib import Path
 import textwrap
 
 import ndspy.bmg
@@ -185,6 +186,8 @@ def analyze(
                 nodeName = f'({id >> 16}, {id & 0xFFFF})'
                 G.add_node(nodeName, color='red')
                 G.add_edge(nodeName, text)
+
+    Path('graphs/').mkdir(exist_ok=True)
 
     # circo is good but sometimes crashes; fdp is worse but reliable
     try:
