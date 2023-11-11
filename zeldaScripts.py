@@ -2,7 +2,7 @@
 
 
 
-def _makeSigned(value, bitCount):
+def _makeSigned(value: int, bitCount: int) -> int:
     """
     Take an unsigned variable value and make it signed.
     """
@@ -41,8 +41,12 @@ class SayInstruction(Instruction):
     """
     Instruction type 1: "SAY". Causes a message to appear.
     """
-    type = 'SAY'
-    typeID = 1
+    type: str = 'SAY'
+    typeID: int = 1
+
+    messageBMG: int
+    messageID: int
+    nextLabel: Label
 
     @classmethod
     def disassemble(cls, value: int):
@@ -68,8 +72,13 @@ class SwitchInstruction(Instruction):
     Instruction type 2: "SW" ("switch"). Causes execution to branch to
     one of any number of labels, depending on some condition.
     """
-    type = 'SW'
-    typeID = 2
+    type: str = 'SW'
+    typeID: int = 2
+
+    condition: int
+    firstLabel: int
+    numLabels: int
+    parameter: int
 
     @classmethod
     def disassemble(cls, value: int):
@@ -225,6 +234,10 @@ class DoInstruction(Instruction):
     """
     type = 'DO'
     typeID = 3
+
+    action: int
+    labelNumber: int
+    parameter: int
 
     @classmethod
     def disassemble(cls, value: int):
