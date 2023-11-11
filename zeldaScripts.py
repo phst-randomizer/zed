@@ -34,6 +34,9 @@ class Instruction:
     def disassemble(cls, value):
         raise NotImplementedError
 
+    def assemble(self):
+        raise NotImplementedError
+
 
 class SayInstruction(Instruction):
     """
@@ -47,10 +50,11 @@ class SayInstruction(Instruction):
     messageBMG: int
     messageID: int
     nextLabel: Label
+    _extraData: int
 
     @classmethod
     def disassemble(cls, value: int):
-        type, bmgID, messageID, gotoIndex, gotoBmg, _ = struct.unpack(
+        type, bmgID, messageID, gotoIndex, gotoBmg, extraData = struct.unpack(
             cls.bytestring, value.to_bytes(length=8, byteorder='little')
         )
 
@@ -60,7 +64,20 @@ class SayInstruction(Instruction):
         obj.messageBMG = bmgID
         obj.messageID = messageID
         obj.nextLabel = Label(gotoBmg, gotoIndex)
+        obj._extraData = extraData
         return obj
+
+    def assemble(self) -> int:
+        byte_data = struct.pack(
+            self.bytestring,
+            self.typeID,
+            self.messageBMG,
+            self.messageID,
+            self.nextLabel.index,
+            self.nextLabel.bmg,
+            self._extraData,
+        )
+        return int.from_bytes(byte_data, byteorder='little')
 
 
 class SwitchInstruction(Instruction):
@@ -102,6 +119,17 @@ class SwitchInstruction(Instruction):
         obj.numLabels = numLabels
         obj.parameter = parameter
         return obj
+
+    def assemble(self) -> int:
+        byte_data = struct.pack(
+            self.bytestring,
+            self.typeID,
+            self.numLabels,
+            self.condition,
+            self.parameter,
+            self.firstLabel,
+        )
+        return int.from_bytes(byte_data, byteorder='little')
 
     def nameForBranch(self, i):
         return str(i)
@@ -277,6 +305,12 @@ class DoInstruction(Instruction):
         obj.parameter = parameter
         return obj
 
+    def assemble(self) -> int:
+        byte_data = struct.pack(
+            self.bytestring, self.typeID, self.action, self.labelNumber, self.parameter
+        )
+        return int.from_bytes(byte_data, byteorder='little')
+
 
 class DoSetProgressFlagInstruction(DoInstruction):
     """
@@ -407,13 +441,18 @@ def disassembleInstruction(instruction: bytes):
     if instID not in (1, 2, 3):
         raise ValueError(f'Unknown instruction type: {instID}')
 
-    return {
+    disassembled = {
         1: SayInstruction,
         2: SwitchInstruction,
         3: DoInstruction,
     }[
         instID
     ].disassemble(instruction)
+
+    # Double check that this works in reverse
+    assert disassembled.assemble() == instruction
+
+    return disassembled
 
 
 def disassembleInstructions(instructions):
