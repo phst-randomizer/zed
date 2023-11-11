@@ -22,6 +22,10 @@ class Instruction:
     type = None
     typeID = 0
 
+    @property
+    def bytestring(self):
+        raise NotImplementedError
+
     @classmethod
     def disassemble(cls, value):
         raise NotImplementedError
@@ -33,6 +37,7 @@ class SayInstruction(Instruction):
     """
     type: str = 'SAY'
     typeID: int = 1
+    bytestring = '<BBHhbb'
 
     messageBMG: int
     messageID: int
@@ -40,7 +45,7 @@ class SayInstruction(Instruction):
 
     @classmethod
     def disassemble(cls, value: int):
-        type, bmgID, messageID, gotoIndex, gotoBmg, _ = struct.unpack('<BBHhbb', value.to_bytes(length=8, byteorder='little'))
+        type, bmgID, messageID, gotoIndex, gotoBmg, _ = struct.unpack(cls.bytestring, value.to_bytes(length=8, byteorder='little'))
 
         assert type == cls.typeID
 
@@ -58,6 +63,7 @@ class SwitchInstruction(Instruction):
     """
     type: str = 'SW'
     typeID: int = 2
+    bytestring = '<BBHHH'
 
     condition: int
     firstLabel: int
@@ -66,7 +72,7 @@ class SwitchInstruction(Instruction):
 
     @classmethod
     def disassemble(cls, value: int):
-        type, numLabels, condition, parameter, firstLabel = struct.unpack('<BBHHH', value.to_bytes(length=8, byteorder='little'))
+        type, numLabels, condition, parameter, firstLabel = struct.unpack(cls.bytestring, value.to_bytes(length=8, byteorder='little'))
 
         assert type == cls.typeID
 
@@ -215,6 +221,7 @@ class DoInstruction(Instruction):
     """
     type = 'DO'
     typeID = 3
+    bytestring = '<BBhI'
 
     action: int
     labelNumber: int
@@ -222,7 +229,7 @@ class DoInstruction(Instruction):
 
     @classmethod
     def disassemble(cls, value: int):
-        type, action, labelNumber, parameter = struct.unpack('<BBhI', value.to_bytes(length=8, byteorder='little'))
+        type, action, labelNumber, parameter = struct.unpack(cls.bytestring, value.to_bytes(length=8, byteorder='little'))
 
         assert type == cls.typeID
 
