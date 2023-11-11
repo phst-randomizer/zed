@@ -1,26 +1,6 @@
 # Library for Zelda scripts
 
-
-
-def _makeSigned(value: int, bitCount: int) -> int:
-    """
-    Take an unsigned variable value and make it signed.
-    """
-    if value < 0: return value
-    if value & (1 << (bitCount - 1)):
-        value -= 1 << bitCount
-    return value
-
-
-def _makeUnsigned(value: int, bitCount: int) -> int:
-    """
-    Take a signed variable value and make it unsigned.
-    """
-    if value >= 0: return value
-    conv = value + (1 << bitCount)
-    if not conv & (1 << (bitCount - 1)):
-        return conv
-    return value
+import struct
 
 class Label:
     """
@@ -60,15 +40,9 @@ class SayInstruction(Instruction):
 
     @classmethod
     def disassemble(cls, value: int):
-        assert value & 0xFF == 1
+        type, bmgID, messageID, gotoIndex, gotoBmg, _ = struct.unpack('<BBHhbb', value.to_bytes(length=8, byteorder='little'))
 
-        bmgID = (value >> 8) & 0xFF
-        messageID = (value >> 16) & 0xFFFF
-        gotoIndex = (value >> 32) & 0xFFFF
-        gotoBmg = (value >> 48) & 0xFF
-
-        gotoIndex = _makeSigned(gotoIndex, 16)
-        gotoBmg = _makeSigned(gotoBmg, 8)
+        assert type == cls.typeID
 
         obj = cls()
         obj.messageBMG = bmgID
@@ -92,12 +66,9 @@ class SwitchInstruction(Instruction):
 
     @classmethod
     def disassemble(cls, value: int):
-        assert value & 0xFF == 2
+        type, numLabels, condition, parameter, firstLabel = struct.unpack('<BBHHH', value.to_bytes(length=8, byteorder='little'))
 
-        numLabels = (value >> 8) & 0xFF
-        condition = (value >> 16) & 0xFFFF
-        parameter = (value >> 32) & 0xFFFF
-        firstLabel = (value >> 48) & 0xFFFF
+        assert type == cls.typeID
 
         subclass = {
             1: SwitchResponse2Instruction,
@@ -251,11 +222,9 @@ class DoInstruction(Instruction):
 
     @classmethod
     def disassemble(cls, value: int):
-        assert value & 0xFF == 3
+        type, action, labelNumber, parameter = struct.unpack('<BBhI', value.to_bytes(length=8, byteorder='little'))
 
-        action = (value >> 8) & 0xFF
-        labelNumber = (value >> 16) & 0xFFFF
-        parameter = value >> 32
+        assert type == cls.typeID
 
         subclass = {
             0: DoSetProgressFlagInstruction,
@@ -272,7 +241,7 @@ class DoInstruction(Instruction):
 
         obj = subclass()
         obj.action = action
-        obj.labelNumber = _makeSigned(labelNumber, 16)
+        obj.labelNumber = labelNumber
         obj.parameter = parameter
         return obj
 
