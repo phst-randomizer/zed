@@ -12,6 +12,16 @@ def _makeSigned(value: int, bitCount: int) -> int:
     return value
 
 
+def _makeUnsigned(value: int, bitCount: int) -> int:
+    """
+    Take a signed variable value and make it unsigned.
+    """
+    if value >= 0: return value
+    conv = value + (1 << bitCount)
+    if not conv & (1 << (bitCount - 1)):
+        return conv
+    return value
+
 class Label:
     """
     Convenience class to represent a label.
