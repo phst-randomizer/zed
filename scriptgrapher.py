@@ -53,7 +53,7 @@ def findRuns(
     for i, inst in enumerate(insts):
         for _, n in nextInstructions_filterBmg(inst, bmg):
             xrefs[n].add(i)
-    for id, idx in bmg.scripts.items():
+    for id, idx in bmg.scripts:
         xrefs[idx].add(None)
 
     runs = [[i] for i, _ in enumerate(insts)]
@@ -179,7 +179,7 @@ def analyze(
             else:
                 G.add_edge(text, runTexts[nextRun])
 
-        for id, idx in bmg.scripts.items():
+        for id, idx in bmg.scripts:
             if r[0] == idx:
                 # Add a script launch node
                 nodeName = f'({id >> 16}, {id & 0xFFFF})'
@@ -219,7 +219,7 @@ def main():
     allScripts: dict[int, set[int]] = {}
     for id, (fn, bmg) in BMGs.items():
         for id in bmg.scripts:
-            a, b = id >> 16, id & 0xFFFF
+            a, b = id
             if a not in allScripts:
                 allScripts[a] = set()
             allScripts[a].add(b)
@@ -227,7 +227,6 @@ def main():
         print(f'{a}:')
         for b in sorted(allScripts[a]):
             print(f'    {b}:')
-    return
 
     for id, (fn, bmg) in BMGs.items():
         analyze(fn, d, bmg, BMGs)
