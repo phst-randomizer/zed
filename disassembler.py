@@ -1,3 +1,4 @@
+import argparse
 import os
 import os.path
 
@@ -194,7 +195,11 @@ def analyze(filename, rawData, bmg, allBmgs):
 
 
 def main():
-    dir = 'data/English/Message'
+    parser = argparse.ArgumentParser(prog='scriptgrapher')
+    parser.add_argument('bmg_dir')
+    args = parser.parse_args()
+
+    dir: str = args.bmg_dir
 
     BMGs = {}
 
