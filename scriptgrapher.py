@@ -190,6 +190,10 @@ def analyze(
                 G.add_node(nodeName, color='red')
                 G.add_edge(nodeName, text)
 
+    output_text_dir = Path('text/')
+    output_text_dir.mkdir(exist_ok=True)
+    (output_text_dir / f'{filename.split(".")[0]}.txt').write_text('\n'.join(runTexts))
+
     Path('graphs/').mkdir(exist_ok=True)
 
     # circo is good but sometimes crashes; fdp is worse but reliable
