@@ -193,14 +193,14 @@ def analyze(
     Path('graphs/').mkdir(exist_ok=True)
 
     # circo is good but sometimes crashes; fdp is worse but reliable
-    # try:
-    #     H = G.copy()
-    #     H.layout('circo')
-    #     H.draw(f'graphs/{filename.split(".")[0]}.png')
-    # except:
-    #     H = G.copy()
-    #     H.layout('fdp')
-    #     H.draw(f'graphs/{filename.split(".")[0]}.png')
+    try:
+        H = G.copy()
+        H.layout('circo')
+        H.draw(f'graphs/{filename.split(".")[0]}.png')
+    except:
+        H = G.copy()
+        H.layout('fdp')
+        H.draw(f'graphs/{filename.split(".")[0]}.png')
 
 
 def main():
