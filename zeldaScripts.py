@@ -455,7 +455,7 @@ def disassembleInstruction(instruction: bytes):
     return disassembled
 
 
-def disassembleInstructions(instructions):
+def disassembleInstructions(instructions: list[bytes]):
     """
     Given a list of instruction values, return a list of Instructions.
     """
