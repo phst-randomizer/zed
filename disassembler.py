@@ -8,6 +8,17 @@ import ndspy.bmg
 import zeldaScripts
 
 
+def convert_flag(eventNode: int, flag: int) -> tuple[int, int]:
+    flag_offset_from_base = (flag >> 5) * 4
+    flag_bit = 1 << (flag & 0x1F)
+
+    while flag_bit > 0x80:
+        flag_bit >>= 8
+        flag_offset_from_base += 1
+
+    return eventNode + flag_offset_from_base, flag_bit
+
+
 def disassembleInstructionType1(inst, bmg, allBmgs):
     """
     Disassemble an instruction of type 1.
@@ -156,28 +167,28 @@ def analyze(filename, rawData, bmg, allBmgs):
     #     lines.append(f'{scriptName} = {bmgID}_{instIdx}')
     # lines.append('')
 
-    zeldaScripts.disassembleInstructions(bmg.instructions)
+    instructions = zeldaScripts.disassembleInstructions(bmg.instructions)
     # return
 
     (Path(__file__).parent / 'messages').mkdir(exist_ok=True)
     (Path(__file__).parent / 'scripts').mkdir(exist_ok=True)
 
-    for i, inst in enumerate(bmg.instructions):
+    for i, (raw_inst, parsed_inst) in enumerate(zip(bmg.instructions, instructions, strict=True)):
+        if parsed_inst.type == 'DO_SET_P_FLAG':
+            offset, bit = convert_flag(0x21B553C, parsed_inst.parameter)
+            lines.append(f'#  {parsed_inst.type} - sets flag @ {hex(offset)}, bit {hex(bit)}')
         for scriptID, instIdx in bmg.scripts:
             if i != instIdx:
                 continue
             lines.append(f'S{scriptID >> 16}_{scriptID & 0xFFFF}:')
 
-        line = f'B{bmgID}_L{i}: '
+        line = f'B{bmgID}_L{i}: '.ljust(12, ' ')
 
         # for scriptID, instIdx in bmg.scripts.items():
         #     if i != instIdx: continue
         #     line += f'B{bmgID}_S{scriptID >> 16}_{scriptID & 0xFFFF}: '
 
-        while len(line) < 12:
-            line += ' '
-
-        line += disassembleInstruction(inst, bmg, allBmgs)
+        line += disassembleInstruction(raw_inst, bmg, allBmgs)
         # line += '  # ' + filename + ' ' + hex(FLW1Offset + 16 + 8 * i)
         lines.append(line)
 
