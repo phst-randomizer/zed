@@ -1,6 +1,7 @@
 import argparse
 import os
 import os.path
+from pathlib import Path
 
 import ndspy.bmg
 
@@ -25,8 +26,6 @@ def disassembleInstructionType1(inst, bmg, allBmgs):
 
     messageBmg = allBmgs[bmgID][1]
     comment = str(messageBmg.messages[messageID]).replace('\n', ' ')
-    if len(comment) > 70:
-        comment = comment[:70] + '[...]'
     comment = f'"{comment}"'
 
     if -1 in [gotoBmg, gotoIndex]:
@@ -160,6 +159,9 @@ def analyze(filename, rawData, bmg, allBmgs):
     zeldaScripts.disassembleInstructions(bmg.instructions)
     # return
 
+    (Path(__file__).parent / 'messages').mkdir(exist_ok=True)
+    (Path(__file__).parent / 'scripts').mkdir(exist_ok=True)
+
     for i, inst in enumerate(bmg.instructions):
         for scriptID, instIdx in bmg.scripts:
             if i != instIdx:
@@ -180,9 +182,9 @@ def analyze(filename, rawData, bmg, allBmgs):
         lines.append(line)
 
     if lines:
-        with open(f'output/{filename}.txt', 'w', encoding='utf-8') as f:
+        with open(f'scripts/{filename}.txt', 'w', encoding='utf-8') as f:
             f.write('\n'.join(lines))
-
+    # return
     # Print the messages
     lines = []
     for i, msg in enumerate(bmg.messages):
@@ -190,7 +192,7 @@ def analyze(filename, rawData, bmg, allBmgs):
         lines.append(str(msg))
         lines.append('--------' * 4)
     del lines[-1]
-    with open(f'output/{filename}.txt', 'w', encoding='utf-8') as f:
+    with open(f'messages/{filename}.txt', 'w', encoding='utf-8') as f:
         f.write('\n'.join(lines))
 
 
