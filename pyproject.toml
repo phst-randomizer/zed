@@ -1,7 +1,9 @@
 [project]
 name = "zed"
 version = "0.0.0"
-dependencies = ["ndspy==4.1.0"]
+dependencies = [
+    "ndspy@git+https://github.com/mike8699/ndspy.git@patch-1",
+]
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
